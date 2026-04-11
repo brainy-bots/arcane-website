@@ -1,18 +1,21 @@
 ---
 const team = [
   {
-    name: "Cristian",
-    role: "Founder",
-    location: "California · US",
-    coords: "37.7749° N, 122.4194° W",
-    timezone: "America/Los_Angeles",
-  },
-  {
     name: "Martin",
-    role: "Co-founder",
+    role: "Founder",
     location: "Helsinki · FI",
     coords: "60.1699° N, 24.9384° E",
     timezone: "Europe/Helsinki",
+    // Base64 parts, decoded client-side only on pointer/focus/click
+    email: { user: "bWFydGluLm1iYQ==", domain: "Z21haWwuY29t" },
+  },
+  {
+    name: "Cristian",
+    role: "Co-founder",
+    location: "California · US",
+    coords: "37.7749° N, 122.4194° W",
+    timezone: "America/Los_Angeles",
+    email: { user: "d2hvaXMuY3Jpcw==", domain: "Z21haWwuY29t" },
   },
 ];
 ---
@@ -53,6 +56,21 @@ const team = [
               <div class="h-px bg-[color:var(--color-rule)] my-6"></div>
               <div class="label">{p.location}</div>
               <div class="font-mono text-xs text-[color:var(--color-mute)] mt-1">{p.coords}</div>
+              <div class="h-px bg-[color:var(--color-rule)] my-6"></div>
+              <div class="flex items-center justify-between">
+                <span class="label">CONTACT</span>
+                <a
+                  href="#"
+                  class="email-link label inline-flex items-center gap-1.5 hover:text-[color:var(--color-signal)] transition-colors"
+                  rel="nofollow noopener"
+                  aria-label={`Email ${p.name}`}
+                  data-u={p.email.user}
+                  data-d={p.email.domain}
+                >
+                  email
+                  <span aria-hidden="true">→</span>
+                </a>
+              </div>
             </div>
           </div>
         ))}
@@ -64,8 +82,8 @@ const team = [
 </section>
 
 <script>
-  // Dynamic "online/away" status based on each teammate's local time.
-  // Online window: 07:00 – 23:00 local.
+  // ── Dynamic online/sleeping status by local timezone ──────
+  // Active window: 07:00 – 23:00 local for each teammate.
   const ONLINE_START = 7;
   const ONLINE_END = 23;
 
@@ -77,19 +95,17 @@ const team = [
       hour: "numeric",
       hour12: false,
     }).format(new Date());
-    // "24" → "0" on some engines; normalize
     const n = parseInt(hourStr, 10);
     return Number.isFinite(n) ? n % 24 : 0;
   };
 
-  const formatLocalTime = (tz: string): string => {
-    return new Intl.DateTimeFormat("en-US", {
+  const formatLocalTime = (tz: string): string =>
+    new Intl.DateTimeFormat("en-US", {
       timeZone: tz,
       hour: "2-digit",
       minute: "2-digit",
       hour12: false,
     }).format(new Date());
-  };
 
   const updateCard = (card: HTMLElement) => {
     const tz = card.dataset.timezone!;
@@ -101,11 +117,43 @@ const team = [
     const timeEl = card.querySelector<HTMLElement>("[data-local-time]");
 
     if (dot) dot.classList.toggle("away", !online);
-    if (label) label.textContent = online ? "ONLINE" : "AWAY";
+    if (label) label.textContent = online ? "ONLINE" : "SLEEPING";
     if (timeEl) timeEl.textContent = formatLocalTime(tz) + " LOCAL";
   };
 
   cards.forEach(updateCard);
-  // Refresh every minute so the label can flip around the boundary
+  // Refresh every minute so the label flips near the boundary
   setInterval(() => cards.forEach(updateCard), 60_000);
+
+  // ── Email obfuscation: decode only on user intent ────────
+  // Static HTML ships href="#" with base64 parts in data-*.
+  // Real mailto: is assembled in-memory when the user hovers,
+  // focuses, or clicks the link — never appears in source view.
+  const emailLinks = document.querySelectorAll<HTMLAnchorElement>(".email-link");
+
+  const decodeEmail = (a: HTMLAnchorElement) => {
+    if (a.href.startsWith("mailto:")) return;
+    const u = a.dataset.u;
+    const d = a.dataset.d;
+    if (!u || !d) return;
+    try {
+      a.href = `mailto:${atob(u)}@${atob(d)}`;
+    } catch {
+      /* malformed base64 — leave href as-is */
+    }
+  };
+
+  emailLinks.forEach((a) => {
+    a.addEventListener("pointerenter", () => decodeEmail(a), { once: true });
+    a.addEventListener("focus", () => decodeEmail(a), { once: true });
+    a.addEventListener("click", (e) => {
+      if (!a.href.startsWith("mailto:")) {
+        e.preventDefault();
+        decodeEmail(a);
+        if (a.href.startsWith("mailto:")) {
+          window.location.href = a.href;
+        }
+      }
+    });
+  });
 </script>
