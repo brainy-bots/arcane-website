@@ -1,0 +1,111 @@
+---
+const team = [
+  {
+    name: "Cristian",
+    role: "Founder",
+    location: "California · US",
+    coords: "37.7749° N, 122.4194° W",
+    timezone: "America/Los_Angeles",
+  },
+  {
+    name: "Martin",
+    role: "Co-founder",
+    location: "Helsinki · FI",
+    coords: "60.1699° N, 24.9384° E",
+    timezone: "Europe/Helsinki",
+  },
+];
+---
+
+<section id="contact" class="relative">
+  <div class="max-w-7xl mx-auto px-6 md:px-10 py-24 md:py-32">
+    <div class="flex items-baseline justify-between mb-16 md:mb-24">
+      <h2 class="label m-0">§ 04 / TEAM</h2>
+      <div class="label hidden md:block" aria-hidden="true">SF · HEL</div>
+    </div>
+
+    <div class="grid md:grid-cols-12 gap-10 md:gap-16 items-start">
+      <div class="md:col-span-4">
+        <h3 class="text-3xl md:text-4xl font-medium tracking-tight leading-tight">
+          Two coasts,<br />
+          <span class="text-[color:var(--color-mute)]">one stack.</span>
+        </h3>
+        <p class="label mt-8 leading-relaxed">
+          Building Arcane in the open. If you're working on multiplayer — or just curious about the numbers — we'd love to hear from you.
+        </p>
+        <a href="mailto:hello@arcane.dev" class="btn btn-primary mt-10">GET IN TOUCH →</a>
+      </div>
+
+      <div class="md:col-span-8 grid md:grid-cols-2 gap-px bg-[color:var(--color-rule)] border border-[color:var(--color-rule)]">
+        {team.map((p) => (
+          <div
+            class="bg-[color:var(--color-bg)] p-8 md:p-10 min-h-[280px] flex flex-col"
+            data-timezone={p.timezone}
+          >
+            <div class="flex items-center gap-2 mb-8">
+              <span class="signal-dot" data-status-dot></span>
+              <span class="label" data-status-label>ONLINE</span>
+              <span class="label ml-auto" data-local-time aria-hidden="true"></span>
+            </div>
+            <div class="mt-auto">
+              <div class="text-2xl md:text-3xl font-medium tracking-tight">{p.name}</div>
+              <div class="label mt-2">{p.role}</div>
+              <div class="h-px bg-[color:var(--color-rule)] my-6"></div>
+              <div class="label">{p.location}</div>
+              <div class="font-mono text-xs text-[color:var(--color-mute)] mt-1">{p.coords}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+
+  <div class="rule"></div>
+</section>
+
+<script>
+  // Dynamic "online/away" status based on each teammate's local time.
+  // Online window: 07:00 – 23:00 local.
+  const ONLINE_START = 7;
+  const ONLINE_END = 23;
+
+  const cards = document.querySelectorAll<HTMLElement>("[data-timezone]");
+
+  const getHourInTz = (tz: string): number => {
+    const hourStr = new Intl.DateTimeFormat("en-US", {
+      timeZone: tz,
+      hour: "numeric",
+      hour12: false,
+    }).format(new Date());
+    // "24" → "0" on some engines; normalize
+    const n = parseInt(hourStr, 10);
+    return Number.isFinite(n) ? n % 24 : 0;
+  };
+
+  const formatLocalTime = (tz: string): string => {
+    return new Intl.DateTimeFormat("en-US", {
+      timeZone: tz,
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    }).format(new Date());
+  };
+
+  const updateCard = (card: HTMLElement) => {
+    const tz = card.dataset.timezone!;
+    const hour = getHourInTz(tz);
+    const online = hour >= ONLINE_START && hour < ONLINE_END;
+
+    const dot = card.querySelector<HTMLElement>("[data-status-dot]");
+    const label = card.querySelector<HTMLElement>("[data-status-label]");
+    const timeEl = card.querySelector<HTMLElement>("[data-local-time]");
+
+    if (dot) dot.classList.toggle("away", !online);
+    if (label) label.textContent = online ? "ONLINE" : "AWAY";
+    if (timeEl) timeEl.textContent = formatLocalTime(tz) + " LOCAL";
+  };
+
+  cards.forEach(updateCard);
+  // Refresh every minute so the label can flip around the boundary
+  setInterval(() => cards.forEach(updateCard), 60_000);
+</script>

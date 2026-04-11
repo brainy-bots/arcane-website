@@ -1,0 +1,76 @@
+---
+const rows = [
+  { label: "SpacetimeDB only", value: 250, pct: (250 / 6000) * 100, signal: false },
+  { label: "Arcane + SpacetimeDB · 1 server", value: 3750, pct: (3750 / 6000) * 100, signal: false },
+  { label: "Arcane + SpacetimeDB · 2–10 servers", value: 6000, pct: 100, signal: true },
+];
+---
+
+<section id="benchmark" class="relative">
+  <div class="max-w-7xl mx-auto px-6 md:px-10 py-24 md:py-32">
+    <div class="flex items-baseline justify-between mb-16 md:mb-24">
+      <h2 class="label m-0">§ 02 / BENCHMARK</h2>
+      <div class="label hidden md:block" aria-hidden="true">RUN · 20260329_014433</div>
+    </div>
+
+    <div class="grid md:grid-cols-12 gap-10 md:gap-16 items-start">
+      <div class="md:col-span-4">
+        <h3 class="text-3xl md:text-4xl font-medium tracking-tight leading-tight">
+          Ceiling at<br />
+          <span class="text-[color:var(--color-mute)]">&lt;1% error,</span><br />
+          <span class="text-[color:var(--color-mute)]">&lt;200ms latency.</span>
+        </h3>
+        <p class="label mt-8 leading-relaxed">
+          A single c7i.2xlarge. Ubuntu 22.04.<br />
+          Redis, SpacetimeDB, Arcane and the load generator co-hosted.<br />
+          10 Hz position updates per player. 2 actions / sec. 30s steady state.
+        </p>
+      </div>
+
+      <div class="md:col-span-8 space-y-8">
+        {rows.map((r) => (
+          <div class="bench-row" style={`--bar-width: ${r.pct}%`}>
+            <div class="flex items-baseline justify-between mb-3">
+              <span class="label">{r.label}</span>
+              <span class={`font-mono text-2xl md:text-3xl tracking-tight ${r.signal ? "text-[color:var(--color-signal)]" : ""}`}>
+                {r.value.toLocaleString("en-US")}
+              </span>
+            </div>
+            <div class="h-[2px] bg-[color:var(--color-rule)] relative overflow-hidden">
+              <div class={`bench-bar ${r.signal ? "signal" : ""}`}></div>
+            </div>
+          </div>
+        ))}
+
+        <div class="flex items-baseline justify-between pt-6 border-t border-[color:var(--color-rule)]">
+          <span class="label">PASS CRITERIA</span>
+          <span class="label">err &lt; 1% · avg &lt; 200ms</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-16 md:mt-20">
+      <a href="https://github.com/brainy-bots/arcane-scaling-benchmarks" target="_blank" rel="noopener" class="btn">
+        REPRODUCE THIS RUN ↗
+      </a>
+    </div>
+  </div>
+
+  <div class="rule"></div>
+</section>
+
+<script>
+  const rows = document.querySelectorAll<HTMLElement>(".bench-row");
+  const io = new IntersectionObserver(
+    (entries) => {
+      for (const e of entries) {
+        if (e.isIntersecting) {
+          e.target.classList.add("in-view");
+          io.unobserve(e.target);
+        }
+      }
+    },
+    { threshold: 0.3 }
+  );
+  rows.forEach((r) => io.observe(r));
+</script>

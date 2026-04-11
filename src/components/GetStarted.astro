@@ -1,0 +1,58 @@
+---
+---
+
+<section id="start" class="relative">
+  <div class="max-w-7xl mx-auto px-6 md:px-10 py-24 md:py-32">
+    <div class="flex items-baseline justify-between mb-16 md:mb-24">
+      <h2 class="label m-0">§ 03 / GETTING STARTED</h2>
+      <div class="label hidden md:block" aria-hidden="true">RUST · UNREAL 5.x</div>
+    </div>
+
+    <div class="grid md:grid-cols-12 gap-10 md:gap-16 items-start">
+      <div class="md:col-span-4">
+        <h3 class="text-3xl md:text-4xl font-medium tracking-tight leading-tight">
+          Clone, build,<br />
+          <span class="text-[color:var(--color-mute)]">join a cluster.</span>
+        </h3>
+        <p class="label mt-8 leading-relaxed">
+          Run the manager, then a cluster server. Point your Unreal client at the join endpoint. That's the whole loop.
+        </p>
+      </div>
+
+      <div class="md:col-span-8">
+        <div class="border border-[color:var(--color-rule)]">
+          <div class="flex items-center gap-2 px-5 py-3 border-b border-[color:var(--color-rule)]">
+            <div class="flex gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-[color:var(--color-rule)]"></span>
+              <span class="w-2 h-2 rounded-full bg-[color:var(--color-rule)]"></span>
+              <span class="w-2 h-2 rounded-full bg-[color:var(--color-signal)]"></span>
+            </div>
+            <span class="label ml-2">TERMINAL</span>
+          </div>
+          <pre class="font-mono text-xs md:text-sm leading-relaxed p-5 md:p-8 overflow-x-auto"><code><span class="text-[color:var(--color-mute)]"># 1. Clone the library</span>
+git clone https://github.com/brainy-bots/arcane
+cd arcane
+
+<span class="text-[color:var(--color-mute)]"># 2. Build everything</span>
+cargo build --release
+
+<span class="text-[color:var(--color-mute)]"># 3. Start the manager (HTTP join)</span>
+cargo run -p arcane-infra --bin arcane-manager --features manager
+
+<span class="text-[color:var(--color-mute)]"># 4. Start a cluster server (WebSocket + Redis)</span>
+cargo run -p arcane-infra --bin arcane-cluster --features cluster-ws
+
+<span class="text-[color:var(--color-mute)]"># 5. Point your Unreal client at:</span>
+<span class="text-[color:var(--color-signal)]">http://127.0.0.1:8081/join</span></code></pre>
+        </div>
+
+        <div class="mt-6 flex flex-wrap gap-3">
+          <a href="https://github.com/brainy-bots/arcane" target="_blank" rel="noopener" class="btn">ARCANE LIBRARY ↗</a>
+          <a href="https://github.com/brainy-bots/arcane-demos" target="_blank" rel="noopener" class="btn">UNREAL DEMO ↗</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="rule"></div>
+</section>

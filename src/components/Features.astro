@@ -1,0 +1,51 @@
+---
+const features = [
+  {
+    title: "Authoritative world state",
+    body: "The server owns the simulation. Clients send intent; Arcane decides what's real. No client-side trust.",
+  },
+  {
+    title: "Horizontal scaling",
+    body: "Spin up more cluster processes as you grow. The manager routes players across instances automatically.",
+  },
+  {
+    title: "Redis-backed replication",
+    body: "State is kept consistent across server processes. Run one host or ten — the protocol is the same.",
+  },
+  {
+    title: "SpacetimeDB persistence",
+    body: "Batched writes to SpacetimeDB keep your database responsive under sustained load. Configurable persist rates.",
+  },
+  {
+    title: "Unreal Engine plugin",
+    body: "Drop arcane-client-unreal into your Plugins/ folder. HTTP join, WebSocket upgrade, replicated entities out of the box.",
+  },
+  {
+    title: "Open source, reproducible",
+    body: "MIT-licensed Rust library. Every benchmark number on this page can be reproduced from a public repo.",
+  },
+];
+---
+
+<section id="features" class="relative">
+  <div class="max-w-7xl mx-auto px-6 md:px-10 py-24 md:py-32">
+    <div class="flex items-baseline justify-between mb-16 md:mb-24">
+      <h2 class="label m-0">§ 01 / FEATURES</h2>
+      <div class="label hidden md:block" aria-hidden="true">/ 06</div>
+    </div>
+
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-px bg-[color:var(--color-rule)] border border-[color:var(--color-rule)]">
+      {features.map((f, i) => (
+        <div class="bg-[color:var(--color-bg)] p-8 md:p-10 min-h-[240px] flex flex-col">
+          <div class="label mb-6">{String(i + 1).padStart(2, "0")}</div>
+          <h3 class="text-xl md:text-2xl font-medium tracking-tight mb-3">{f.title}</h3>
+          <p class="text-[color:var(--color-mute)] text-sm md:text-base leading-relaxed mt-auto">
+            {f.body}
+          </p>
+        </div>
+      ))}
+    </div>
+  </div>
+
+  <div class="rule"></div>
+</section>

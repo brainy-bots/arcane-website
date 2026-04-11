@@ -1,0 +1,158 @@
+---
+---
+
+<nav class="sticky top-0 z-40 backdrop-blur-md bg-[color:var(--color-bg)]/80 border-b border-[color:var(--color-rule)]">
+  <div class="max-w-7xl mx-auto px-6 md:px-10 h-14 flex items-center justify-between">
+    <a href="/" class="flex items-center gap-2.5 group py-2">
+      <span class="signal-dot"></span>
+      <span class="font-sans font-medium tracking-[0.22em] text-sm">ARCANE</span>
+    </a>
+
+    <!-- Desktop links (md+) -->
+    <div class="hidden md:flex items-center gap-6 lg:gap-8">
+      <a href="#features" class="label py-3 hover:text-[color:var(--color-fg)] transition-colors">FEATURES</a>
+      <a href="#benchmark" class="label py-3 hover:text-[color:var(--color-fg)] transition-colors">BENCHMARK</a>
+      <a href="#start" class="label py-3 hover:text-[color:var(--color-fg)] transition-colors">START</a>
+      <a href="#contact" class="label py-3 hover:text-[color:var(--color-fg)] transition-colors">TEAM</a>
+      <a href="https://github.com/brainy-bots/arcane" target="_blank" rel="noopener" class="label py-3 hover:text-[color:var(--color-signal)] transition-colors">GITHUB ↗</a>
+    </div>
+
+    <!-- Mobile: GitHub link + hamburger (sub-md) -->
+    <div class="flex md:hidden items-center gap-1">
+      <a
+        href="https://github.com/brainy-bots/arcane"
+        target="_blank"
+        rel="noopener"
+        class="label px-3 py-3 min-h-[44px] inline-flex items-center hover:text-[color:var(--color-signal)] transition-colors"
+      >
+        GITHUB ↗
+      </a>
+      <button
+        type="button"
+        id="nav-toggle"
+        aria-label="Toggle navigation menu"
+        aria-expanded="false"
+        aria-controls="nav-panel"
+        class="min-w-[44px] min-h-[44px] inline-flex items-center justify-center text-[color:var(--color-fg)] hover:text-[color:var(--color-signal)] transition-colors"
+      >
+        <span class="nav-toggle-icon" aria-hidden="true"></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile menu panel (collapsed by default) -->
+  <div
+    id="nav-panel"
+    class="md:hidden overflow-hidden max-h-0 transition-[max-height] duration-300 ease-out border-t border-[color:var(--color-rule)] border-t-transparent"
+  >
+    <div class="max-w-7xl mx-auto px-6 py-2 flex flex-col divide-y divide-[color:var(--color-rule)]">
+      <a href="#features" data-nav-link class="label py-4 min-h-[44px] flex items-center hover:text-[color:var(--color-fg)] transition-colors">§ 01 · FEATURES</a>
+      <a href="#benchmark" data-nav-link class="label py-4 min-h-[44px] flex items-center hover:text-[color:var(--color-fg)] transition-colors">§ 02 · BENCHMARK</a>
+      <a href="#start" data-nav-link class="label py-4 min-h-[44px] flex items-center hover:text-[color:var(--color-fg)] transition-colors">§ 03 · START</a>
+      <a href="#contact" data-nav-link class="label py-4 min-h-[44px] flex items-center hover:text-[color:var(--color-fg)] transition-colors">§ 04 · TEAM</a>
+    </div>
+  </div>
+</nav>
+
+<script>
+  const toggle = document.getElementById("nav-toggle") as HTMLButtonElement | null;
+  const panel = document.getElementById("nav-panel") as HTMLElement | null;
+  const links = panel?.querySelectorAll<HTMLAnchorElement>("[data-nav-link]");
+
+  const closeMenu = () => {
+    if (!toggle || !panel) return;
+    toggle.setAttribute("aria-expanded", "false");
+    toggle.classList.remove("is-open");
+    panel.style.maxHeight = "0px";
+    panel.classList.remove("is-open");
+  };
+
+  const openMenu = () => {
+    if (!toggle || !panel) return;
+    toggle.setAttribute("aria-expanded", "true");
+    toggle.classList.add("is-open");
+    panel.style.maxHeight = panel.scrollHeight + "px";
+    panel.classList.add("is-open");
+  };
+
+  toggle?.addEventListener("click", () => {
+    const isOpen = toggle.getAttribute("aria-expanded") === "true";
+    isOpen ? closeMenu() : openMenu();
+  });
+
+  // Close when any link is tapped
+  links?.forEach((link) => link.addEventListener("click", closeMenu));
+
+  // Close on escape
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeMenu();
+  });
+
+  // Close if viewport grows to md+
+  const mq = window.matchMedia("(min-width: 768px)");
+  mq.addEventListener("change", (e) => {
+    if (e.matches) closeMenu();
+  });
+</script>
+
+<style>
+  /* ── Hamburger icon (pure CSS, 3 bars → X) ─────────────── */
+  .nav-toggle-icon,
+  .nav-toggle-icon::before,
+  .nav-toggle-icon::after {
+    content: "";
+    display: block;
+    width: 18px;
+    height: 1.5px;
+    background: currentColor;
+    transition:
+      transform 0.25s ease,
+      top 0.25s ease,
+      opacity 0.15s ease;
+  }
+
+  .nav-toggle-icon {
+    position: relative;
+  }
+
+  .nav-toggle-icon::before,
+  .nav-toggle-icon::after {
+    position: absolute;
+    left: 0;
+  }
+
+  .nav-toggle-icon::before {
+    top: -6px;
+  }
+
+  .nav-toggle-icon::after {
+    top: 6px;
+  }
+
+  #nav-toggle.is-open .nav-toggle-icon {
+    background: transparent;
+  }
+
+  #nav-toggle.is-open .nav-toggle-icon::before {
+    top: 0;
+    transform: rotate(45deg);
+  }
+
+  #nav-toggle.is-open .nav-toggle-icon::after {
+    top: 0;
+    transform: rotate(-45deg);
+  }
+
+  #nav-panel.is-open {
+    border-top-color: var(--color-rule);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #nav-panel,
+    .nav-toggle-icon,
+    .nav-toggle-icon::before,
+    .nav-toggle-icon::after {
+      transition: none;
+    }
+  }
+</style>
