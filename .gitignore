@@ -26,3 +26,7 @@ pnpm-debug.log*
 # local-only working docs
 DESIGN.md
 BRAND.md
+constellation_animation.html
+
+# source assets (too large for git)
+logos/
