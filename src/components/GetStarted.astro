@@ -1,4 +1,22 @@
 ---
+// Terminal lines — typed out sequentially on scroll into view
+const lines = [
+  { text: "# 1. Clone the library", type: "comment" },
+  { text: "git clone https://github.com/brainy-bots/arcane", type: "command" },
+  { text: "cd arcane", type: "command" },
+  { text: "", type: "blank" },
+  { text: "# 2. Build everything", type: "comment" },
+  { text: "cargo build --release", type: "command" },
+  { text: "", type: "blank" },
+  { text: "# 3. Start the manager (HTTP join)", type: "comment" },
+  { text: "cargo run -p arcane-infra --bin arcane-manager --features manager", type: "command" },
+  { text: "", type: "blank" },
+  { text: "# 4. Start a cluster server (WebSocket + Redis)", type: "comment" },
+  { text: "cargo run -p arcane-infra --bin arcane-cluster --features cluster-ws", type: "command" },
+  { text: "", type: "blank" },
+  { text: "# 5. Point your Unreal client at:", type: "comment" },
+  { text: "http://127.0.0.1:8081/join", type: "url" },
+];
 ---
 
 <section id="start" class="relative">
@@ -21,6 +39,7 @@
 
       <div class="md:col-span-8">
         <div class="border border-[color:var(--color-rule)]">
+          <!-- Terminal title bar -->
           <div class="flex items-center gap-2 px-5 py-3 border-b border-[color:var(--color-rule)]">
             <div class="flex gap-1.5">
               <span class="w-2 h-2 rounded-full bg-[color:var(--color-rule)]"></span>
@@ -29,21 +48,28 @@
             </div>
             <span class="label ml-2">TERMINAL</span>
           </div>
-          <pre class="font-mono text-xs md:text-sm leading-relaxed p-5 md:p-8 overflow-x-auto"><code><span class="text-[color:var(--color-mute)]"># 1. Clone the library</span>
-git clone https://github.com/brainy-bots/arcane
-cd arcane
 
-<span class="text-[color:var(--color-mute)]"># 2. Build everything</span>
-cargo build --release
-
-<span class="text-[color:var(--color-mute)]"># 3. Start the manager (HTTP join)</span>
-cargo run -p arcane-infra --bin arcane-manager --features manager
-
-<span class="text-[color:var(--color-mute)]"># 4. Start a cluster server (WebSocket + Redis)</span>
-cargo run -p arcane-infra --bin arcane-cluster --features cluster-ws
-
-<span class="text-[color:var(--color-mute)]"># 5. Point your Unreal client at:</span>
-<span class="text-[color:var(--color-signal)]">http://127.0.0.1:8081/join</span></code></pre>
+          <!-- Animated terminal output -->
+          <div class="relative">
+            <button
+              class="term-copy"
+              data-copy-btn
+              aria-label="Copy all commands to clipboard"
+              title="Copy commands"
+            >
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <rect x="5" y="5" width="9" height="9" rx="1" />
+                <path d="M3 11V3a1 1 0 0 1 1-1h8" />
+              </svg>
+              <span data-copy-label>COPY</span>
+            </button>
+            <div
+              class="font-mono text-xs md:text-sm leading-relaxed p-5 md:p-8 min-h-[360px] overflow-x-auto"
+              data-terminal
+              data-lines={JSON.stringify(lines)}
+            >
+            </div>
+          </div>
         </div>
 
         <div class="mt-6 flex flex-wrap gap-3">
@@ -56,3 +82,274 @@ cargo run -p arcane-infra --bin arcane-cluster --features cluster-ws
 
   <div class="rule"></div>
 </section>
+
+<script>
+  // ── Terminal typing animation ──────────────────────────────
+  // Types each line character-by-character, triggered when
+  // the terminal scrolls into view. Respects reduced motion.
+
+  interface Line {
+    text: string;
+    type: "comment" | "command" | "url" | "blank";
+  }
+
+  const terminal = document.querySelector<HTMLElement>("[data-terminal]");
+  if (!terminal) throw new Error("Terminal element not found");
+
+  const lines: Line[] = JSON.parse(terminal.dataset.lines || "[]");
+  const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // ── Helpers ──────────────────────────────────────────────
+  const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+  const createLine = (): HTMLDivElement => {
+    const el = document.createElement("div");
+    el.className = "term-line";
+    el.style.whiteSpace = "pre-wrap";
+    el.style.wordBreak = "break-all";
+    el.style.minHeight = "1.5em";
+    terminal.appendChild(el);
+    return el;
+  };
+
+  const addSpan = (parent: HTMLElement, text: string, cls: string) => {
+    const span = document.createElement("span");
+    span.className = cls;
+    span.textContent = text;
+    parent.appendChild(span);
+    return span;
+  };
+
+  // ── Cursor ───────────────────────────────────────────────
+  let cursorEl: HTMLSpanElement | null = null;
+
+  const showCursor = (parent: HTMLElement) => {
+    if (cursorEl) cursorEl.remove();
+    cursorEl = document.createElement("span");
+    cursorEl.className = "term-cursor";
+    cursorEl.textContent = "▊";
+    parent.appendChild(cursorEl);
+  };
+
+  const removeCursor = () => {
+    if (cursorEl) {
+      cursorEl.remove();
+      cursorEl = null;
+    }
+  };
+
+  // ── Static fallback (no-animation, reduced motion) ──────
+  const renderStatic = () => {
+    for (const line of lines) {
+      const el = createLine();
+      if (line.type === "blank") continue;
+      if (line.type === "command") addSpan(el, "$ ", "term-prompt");
+      const cls =
+        line.type === "comment"
+          ? "term-comment"
+          : line.type === "url"
+            ? "term-url"
+            : "term-text";
+      addSpan(el, line.text, cls);
+    }
+  };
+
+  // ── Animated typing ──────────────────────────────────────
+  const typeTerminal = async () => {
+    const CHAR_SPEED_CMD = 28;
+    const CHAR_SPEED_COMMENT = 16;
+    const CHAR_SPEED_URL = 22;
+    const PAUSE_AFTER_CMD = 420;
+    const PAUSE_AFTER_COMMENT = 180;
+    const PAUSE_BLANK = 120;
+
+    for (const line of lines) {
+      if (line.type === "blank") {
+        removeCursor();
+        createLine();
+        await sleep(PAUSE_BLANK);
+        continue;
+      }
+
+      const el = createLine();
+
+      // Prompt for commands
+      if (line.type === "command") {
+        addSpan(el, "$ ", "term-prompt");
+      }
+
+      // Determine styling class and typing speed
+      const cls =
+        line.type === "comment"
+          ? "term-comment"
+          : line.type === "url"
+            ? "term-url"
+            : "term-text";
+      const speed =
+        line.type === "comment"
+          ? CHAR_SPEED_COMMENT
+          : line.type === "url"
+            ? CHAR_SPEED_URL
+            : CHAR_SPEED_CMD;
+
+      // Create span for text (will grow character by character)
+      const textSpan = addSpan(el, "", cls);
+      showCursor(el);
+
+      // Type each character
+      for (let i = 0; i < line.text.length; i++) {
+        textSpan.textContent += line.text[i];
+        // Jitter: randomly speed up/slow down slightly for realism
+        const jitter = speed + (Math.random() * 16 - 8);
+        await sleep(jitter);
+      }
+
+      removeCursor();
+
+      // Pause before next line
+      const pause =
+        line.type === "command" ? PAUSE_AFTER_CMD : PAUSE_AFTER_COMMENT;
+      await sleep(pause);
+    }
+
+    // End with a blinking cursor on a new empty line
+    const finalLine = createLine();
+    addSpan(finalLine, "$ ", "term-prompt");
+    showCursor(finalLine);
+  };
+
+  // ── Copy button ───────────────────────────────────────────
+  const copyBtn = document.querySelector<HTMLButtonElement>("[data-copy-btn]");
+  const copyLabel = document.querySelector<HTMLElement>("[data-copy-label]");
+  // Build the plain-text version of all commands (no comments, no blanks)
+  const commandsText = lines
+    .filter((l: Line) => l.type === "command")
+    .map((l: Line) => l.text)
+    .join("\n");
+
+  copyBtn?.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(commandsText);
+      copyBtn.classList.add("copied");
+      if (copyLabel) copyLabel.textContent = "COPIED";
+      setTimeout(() => {
+        copyBtn.classList.remove("copied");
+        if (copyLabel) copyLabel.textContent = "COPY";
+      }, 2000);
+    } catch {
+      /* clipboard API may fail in insecure contexts — degrade silently */
+    }
+  });
+
+  // ── Restart loop ─────────────────────────────────────────
+  const RESTART_DELAY = 8000; // ms to wait after completion before restarting
+
+  const clearTerminal = async () => {
+    removeCursor();
+    // Fade out existing content
+    terminal.style.transition = "opacity 0.5s ease";
+    terminal.style.opacity = "0";
+    await sleep(500);
+    terminal.innerHTML = "";
+    terminal.style.opacity = "1";
+  };
+
+  const typeLoop = async () => {
+    while (true) {
+      await typeTerminal();
+      await sleep(RESTART_DELAY);
+      await clearTerminal();
+      await sleep(300);
+    }
+  };
+
+  // ── Scroll-triggered start ───────────────────────────────
+  if (prefersReduced) {
+    renderStatic();
+  } else {
+    let started = false;
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting && !started) {
+            started = true;
+            io.disconnect();
+            typeLoop();
+          }
+        }
+      },
+      { threshold: 0.25 }
+    );
+    io.observe(terminal);
+  }
+</script>
+
+<style is:global>
+  /* ── Terminal typing styles ──────────────────────────── */
+  .term-prompt {
+    color: var(--color-signal);
+    user-select: none;
+  }
+
+  .term-comment {
+    color: #6b7a8a; /* steel-blue muted — distinct from commands */
+  }
+
+  .term-text {
+    color: var(--color-signal); /* signal-green — the commands you type */
+  }
+
+  .term-url {
+    color: var(--color-signal);
+  }
+
+  /* ── Copy button ───────────────────────────────────── */
+  .term-copy {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.6rem;
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-mute);
+    border: 1px solid var(--color-rule);
+    background: var(--color-bg);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    z-index: 2;
+  }
+
+  .term-copy:hover {
+    color: var(--color-signal);
+    border-color: var(--color-signal);
+  }
+
+  .term-copy.copied {
+    color: var(--color-signal);
+    border-color: var(--color-signal);
+  }
+
+  .term-cursor {
+    color: var(--color-signal);
+    animation: cursor-blink 0.9s step-end infinite;
+    font-weight: 400;
+    margin-left: 1px;
+  }
+
+  @keyframes cursor-blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .term-cursor {
+      animation: none;
+      opacity: 1;
+    }
+  }
+</style>

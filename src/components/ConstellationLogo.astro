@@ -1,0 +1,143 @@
+---
+interface Props {
+  /** Apply the staggered unfold + continuous rotation animation */
+  animated?: boolean;
+  class?: string;
+}
+const { animated = false, class: className = "" } = Astro.props;
+const classes = ["constellation", animated && "is-animated", className]
+  .filter(Boolean)
+  .join(" ");
+
+// ── Procedural geometry ─────────────────────────────────────
+const CX = 300;
+const CY = 300;
+
+// Outer dot ring — 80 dots at radius 282
+const OUTER_DOT_COUNT = 80;
+const OUTER_R = 282;
+const outerDots = Array.from({ length: OUTER_DOT_COUNT }, (_, i) => {
+  const angle = ((i * 360) / OUTER_DOT_COUNT - 90) * (Math.PI / 180);
+  return {
+    cx: +(CX + OUTER_R * Math.cos(angle)).toFixed(2),
+    cy: +(CY + OUTER_R * Math.sin(angle)).toFixed(2),
+    // Stagger the sweep around the ring (~1s total from first to last)
+    delay: +(i * 0.012).toFixed(3),
+  };
+});
+
+// Core dot ring — 28 dots at radius 58 around the inner hexagram
+const CORE_DOT_COUNT = 28;
+const CORE_R = 58;
+const coreDots = Array.from({ length: CORE_DOT_COUNT }, (_, i) => {
+  const angle = ((i * 360) / CORE_DOT_COUNT - 90) * (Math.PI / 180);
+  return {
+    cx: +(CX + CORE_R * Math.cos(angle)).toFixed(2),
+    cy: +(CY + CORE_R * Math.sin(angle)).toFixed(2),
+    delay: +(i * 0.02).toFixed(3),
+  };
+});
+
+// 6-point hexagram (inner asterisk): 3 lines crossing at 0°, 60°, 120°
+const HEX_R = 42;
+const hexLines = [0, 60, 120].map((deg) => {
+  const rad = (deg * Math.PI) / 180;
+  return {
+    x1: +(CX - HEX_R * Math.cos(rad)).toFixed(2),
+    y1: +(CY - HEX_R * Math.sin(rad)).toFixed(2),
+    x2: +(CX + HEX_R * Math.cos(rad)).toFixed(2),
+    y2: +(CY + HEX_R * Math.sin(rad)).toFixed(2),
+  };
+});
+---
+
+<svg
+  viewBox="0 0 600 600"
+  xmlns="http://www.w3.org/2000/svg"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  class={classes}
+  aria-hidden="true"
+>
+  <g class="c-wrapper">
+    <!-- ── Outer dot ring (80 individual dots) ──────────── -->
+    <g class="c-ring c-ring-outer">
+      {outerDots.map((d) => (
+        <circle
+          cx={d.cx}
+          cy={d.cy}
+          r="2"
+          fill="currentColor"
+          stroke="none"
+          style={`--dot-delay: ${d.delay}s`}
+        />
+      ))}
+    </g>
+
+    <!-- ── Cardinal crosshair markers ───────────────────── -->
+    <g class="c-crosses">
+      <!-- N --><line x1="300" y1="10" x2="300" y2="34" /><line x1="288" y1="22" x2="312" y2="22" />
+      <!-- E --><line x1="566" y1="300" x2="590" y2="300" /><line x1="578" y1="288" x2="578" y2="312" />
+      <!-- S --><line x1="300" y1="566" x2="300" y2="590" /><line x1="288" y1="578" x2="312" y2="578" />
+      <!-- W --><line x1="10" y1="300" x2="34" y2="300" /><line x1="22" y1="288" x2="22" y2="312" />
+    </g>
+
+    <!-- ── Middle dashed ring (bearing marks) ───────────── -->
+    <g class="c-ring c-ring-mid">
+      <circle cx="300" cy="300" r="245" stroke-dasharray="26 9" stroke-width="2" />
+    </g>
+
+    <!-- ── Inner solid ring ─────────────────────────────── -->
+    <g class="c-ring c-ring-inner">
+      <circle cx="300" cy="300" r="215" stroke-width="2" />
+    </g>
+
+    <!-- ── Compass (the rotating center) ────────────────── -->
+    <g class="c-compass">
+      <!-- Primary cardinal axes through the star tips -->
+      <line class="c-axis-h" x1="100" y1="300" x2="500" y2="300" />
+      <line class="c-axis-v" x1="300" y1="100" x2="300" y2="500" />
+
+      <!-- Main 4-point diamond star -->
+      <polygon
+        class="c-star"
+        points="300,100 340,260 500,300 340,340 300,500 260,340 100,300 260,260"
+      />
+
+      <!-- Diagonal lines from center to shoulders -->
+      <g class="c-diagonals">
+        <line x1="300" y1="300" x2="340" y2="260" />
+        <line x1="300" y1="300" x2="340" y2="340" />
+        <line x1="300" y1="300" x2="260" y2="340" />
+        <line x1="300" y1="300" x2="260" y2="260" />
+      </g>
+
+      <!-- 6-point hexagram (inner asterisk) -->
+      <g class="c-hex">
+        {hexLines.map((h) => (
+          <line x1={h.x1} y1={h.y1} x2={h.x2} y2={h.y2} />
+        ))}
+      </g>
+    </g>
+
+    <!-- ── Core dotted ring (28 dots) ───────────────────── -->
+    <g class="c-ring c-ring-core">
+      {coreDots.map((d) => (
+        <circle
+          cx={d.cx}
+          cy={d.cy}
+          r="1.6"
+          fill="currentColor"
+          stroke="none"
+          style={`--dot-delay: ${d.delay}s`}
+        />
+      ))}
+    </g>
+
+    <!-- ── Center dot ───────────────────────────────────── -->
+    <circle class="c-center" cx="300" cy="300" r="3.5" fill="currentColor" stroke="none" />
+  </g>
+</svg>

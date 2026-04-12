@@ -141,6 +141,30 @@ button:focus-visible,
   color: var(--color-bg);
 }
 
+/* ── ARCANE wordmark wave (letter-by-letter green pulse) ── */
+.arcane-letter {
+  display: inline-block;
+  color: var(--color-fg);
+  animation: arcane-wave 5s ease-in-out infinite;
+  animation-delay: calc(var(--letter-i, 0) * 0.14s);
+  will-change: opacity, text-shadow;
+}
+
+@keyframes arcane-wave {
+  0%, 18%, 100% {
+    opacity: 0.88;
+    color: var(--color-fg);
+    text-shadow: none;
+  }
+  7% {
+    opacity: 1;
+    color: var(--color-signal);
+    text-shadow:
+      0 0 40px rgba(0, 255, 156, 0.6),
+      0 0 80px rgba(0, 255, 156, 0.15);
+  }
+}
+
 /* ── Section label (monospace caption) ──────────────────── */
 .label {
   font-family: var(--font-mono);
@@ -180,6 +204,190 @@ button:focus-visible,
   display: none;
 }
 
+/* ────────────────────────────────────────────────────────── */
+/* ── Constellation logo ──────────────────────────────────── */
+/* ────────────────────────────────────────────────────────── */
+.constellation {
+  display: block;
+  width: 100%;
+  height: auto;
+  color: var(--color-fg);
+  overflow: visible;
+}
+
+/* All elements use the SVG viewBox coordinate system for transforms */
+.constellation,
+.constellation * {
+  transform-box: view-box;
+  transform-origin: 300px 300px;
+}
+
+/* ── Whole-logo grow-from-nothing wrapper (animated only) ── */
+.constellation.is-animated .c-wrapper {
+  opacity: 0;
+  transform: scale(0.18);
+  animation: c-grow 2.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards;
+  will-change: transform, opacity;
+}
+
+@keyframes c-grow {
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ── Unfold choreography (plays while the wrapper grows) ── */
+/* Center dot appears first */
+.constellation.is-animated .c-center {
+  opacity: 0;
+  transform: scale(0);
+  animation: c-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.15s forwards;
+}
+
+/* 6-point inner hexagram (asterisk) draws outward */
+.constellation.is-animated .c-hex line {
+  stroke-dasharray: 85;
+  stroke-dashoffset: 85;
+  animation: c-draw 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.4s forwards;
+}
+
+/* Primary horizontal + vertical axes draw from center outward */
+.constellation.is-animated .c-axis-h,
+.constellation.is-animated .c-axis-v {
+  stroke-dasharray: 400;
+  stroke-dashoffset: 400;
+  animation: c-draw 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards;
+}
+
+/* Shoulder diagonals (short lines from center) */
+.constellation.is-animated .c-diagonals line {
+  stroke-dasharray: 60;
+  stroke-dashoffset: 60;
+  animation: c-draw 0.5s cubic-bezier(0.16, 1, 0.3, 1) 1.0s forwards;
+}
+
+/* Main 4-point star polygon strokes around its outline */
+.constellation.is-animated .c-star {
+  stroke-dasharray: 1320;
+  stroke-dashoffset: 1320;
+  animation: c-draw 1.5s cubic-bezier(0.16, 1, 0.3, 1) 1.15s forwards;
+}
+
+/* Core dotted ring: each of its 28 dots sweeps in individually */
+.constellation.is-animated .c-ring-core circle {
+  opacity: 0;
+  transform: scale(0);
+  animation: c-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  animation-delay: calc(1.6s + var(--dot-delay, 0s));
+}
+
+/* Inner solid ring draws in */
+.constellation.is-animated .c-ring-inner circle {
+  stroke-dasharray: 1351;
+  stroke-dashoffset: 1351;
+  animation: c-draw 1.4s cubic-bezier(0.16, 1, 0.3, 1) 1.95s forwards;
+}
+
+/* Middle dashed ring draws in */
+.constellation.is-animated .c-ring-mid circle {
+  stroke-dasharray: 1540;
+  stroke-dashoffset: 1540;
+  animation: c-draw 1.4s cubic-bezier(0.16, 1, 0.3, 1) 2.2s forwards;
+}
+
+/* Outer dot ring: each of its 80 dots sweeps in around the circle */
+.constellation.is-animated .c-ring-outer circle {
+  opacity: 0;
+  transform: scale(0);
+  animation: c-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  animation-delay: calc(2.5s + var(--dot-delay, 0s));
+}
+
+/* Cardinal crosshair markers fade in last */
+.constellation.is-animated .c-crosses line {
+  opacity: 0;
+  animation: c-fade-in 0.5s ease-out 3.4s forwards;
+}
+
+/* ── Continuous orbits (begin after unfold completes @ ~4s) ── */
+.constellation.is-animated .c-ring-core {
+  animation: c-rotate-cw 70s linear infinite 4s;
+  will-change: transform;
+}
+
+.constellation.is-animated .c-ring-inner {
+  animation: c-rotate-ccw 110s linear infinite 4s;
+  will-change: transform;
+}
+
+.constellation.is-animated .c-ring-mid {
+  animation: c-rotate-cw 140s linear infinite 4s;
+  will-change: transform;
+}
+
+.constellation.is-animated .c-ring-outer {
+  animation: c-rotate-ccw 200s linear infinite 4s;
+  will-change: transform;
+}
+
+/* The compass itself (center star + diagonals + hexagram) spins slowly */
+.constellation.is-animated .c-compass {
+  animation: c-rotate-cw 240s linear infinite 4s;
+  will-change: transform;
+}
+
+@keyframes c-draw {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes c-fade-in {
+  to { opacity: 1; }
+}
+
+@keyframes c-pop {
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes c-rotate-cw {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes c-rotate-ccw {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(-360deg); }
+}
+
+/* ── Background constellation (fixed, behind all content) ── */
+.constellation-background {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.2;
+  /* Scroll-linked drift stacks on top of the orbital rotations */
+  transform: rotate(calc(var(--scroll-y, 0) * 0.02deg));
+  transition: transform 0.12s linear;
+}
+
+.constellation-background .constellation {
+  width: min(95vmin, 1100px);
+  color: var(--color-fg);
+}
+
+/* Ensure real content stacks above the background */
+.site-content {
+  position: relative;
+  z-index: 1;
+}
+
 /* ── Reduced motion (accessibility) ─────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -204,5 +412,26 @@ button:focus-visible,
   .bench-row .bench-bar {
     transition: none;
     transform: scaleX(1);
+  }
+
+  .arcane-letter {
+    animation: none !important;
+    opacity: 1 !important;
+    color: var(--color-fg) !important;
+    text-shadow: none !important;
+  }
+
+  .constellation.is-animated *,
+  .constellation.is-animated {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    stroke-dasharray: none !important;
+    stroke-dashoffset: 0 !important;
+  }
+
+  .constellation-background {
+    transform: none !important;
+    transition: none !important;
   }
 }

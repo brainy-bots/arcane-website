@@ -1,5 +1,6 @@
 ---
 import "../styles/global.css";
+import ConstellationLogo from "../components/ConstellationLogo.astro";
 
 interface Props {
   title?: string;
@@ -37,6 +38,34 @@ const {
     <title>{title}</title>
   </head>
   <body>
-    <slot />
+    <!-- Fixed animated constellation behind all content (unfolds on load, rotates forever) -->
+    <div class="constellation-background" aria-hidden="true">
+      <ConstellationLogo animated />
+    </div>
+
+    <div class="site-content">
+      <slot />
+    </div>
+
+    <script is:inline>
+      // Scroll-linked drift — continuously updates --scroll-y so the background
+      // constellation rotates subtly as the user scrolls down the page.
+      (() => {
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+        let frame = 0;
+        const update = () => {
+          document.documentElement.style.setProperty("--scroll-y", String(window.scrollY));
+          frame = 0;
+        };
+        window.addEventListener(
+          "scroll",
+          () => {
+            if (!frame) frame = requestAnimationFrame(update);
+          },
+          { passive: true }
+        );
+        update();
+      })();
+    </script>
   </body>
 </html>
