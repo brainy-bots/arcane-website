@@ -1,8 +1,8 @@
 ---
 const rows = [
-  { label: "SpacetimeDB only", value: 250, pct: (250 / 6000) * 100, signal: false },
-  { label: "Arcane + SpacetimeDB · 1 server", value: 3750, pct: (3750 / 6000) * 100, signal: false },
-  { label: "Arcane + SpacetimeDB · 2–10 servers", value: 6000, pct: 100, signal: true },
+  { label: "SpacetimeDB only · 1 node", value: 1750, latency: "51 ms", pct: (1750 / 6000) * 100, signal: false },
+  { label: "Arcane + SpacetimeDB · 2 clusters", value: 3500, latency: "50 ms", pct: (3500 / 6000) * 100, signal: false },
+  { label: "Arcane + SpacetimeDB · 4 clusters", value: 6000, latency: "126 ms", pct: 100, signal: true },
 ];
 ---
 
@@ -18,7 +18,7 @@ const rows = [
         <h3 class="text-3xl md:text-4xl font-medium tracking-tight leading-tight">
           Ceiling at<br />
           <span class="text-[color:var(--color-mute)]">&lt;1% error,</span><br />
-          <span class="text-[color:var(--color-mute)]">&lt;200ms latency.</span>
+          <span class="text-[color:var(--color-mute)]">50–126 ms avg.</span>
         </h3>
         <p class="label mt-8 leading-relaxed">
           A single c7i.2xlarge. Ubuntu 22.04.<br />
@@ -32,9 +32,12 @@ const rows = [
           <div class="bench-row" style={`--bar-width: ${r.pct}%`}>
             <div class="flex items-baseline justify-between mb-3">
               <span class="label">{r.label}</span>
-              <span class={`font-mono text-2xl md:text-3xl tracking-tight ${r.signal ? "text-[color:var(--color-signal)]" : ""}`}>
-                {r.value.toLocaleString("en-US")}
-              </span>
+              <div class="flex items-baseline gap-4">
+                <span class="label text-[color:var(--color-mute)]">{r.latency}</span>
+                <span class={`font-mono text-2xl md:text-3xl tracking-tight ${r.signal ? "text-[color:var(--color-signal)]" : ""}`}>
+                  {r.value.toLocaleString("en-US")}
+                </span>
+              </div>
             </div>
             <div class="h-[2px] bg-[color:var(--color-rule)] relative overflow-hidden">
               <div class={`bench-bar ${r.signal ? "signal" : ""}`}></div>
@@ -44,7 +47,7 @@ const rows = [
 
         <div class="flex items-baseline justify-between pt-6 border-t border-[color:var(--color-rule)]">
           <span class="label">PASS CRITERIA</span>
-          <span class="label">err &lt; 1% · avg &lt; 200ms</span>
+          <span class="label">err &lt; 1% · avg &lt; 200 ms · latency at 6,000 players: 126 ms</span>
         </div>
       </div>
     </div>

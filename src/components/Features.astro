@@ -1,28 +1,28 @@
 ---
 const features = [
   {
-    title: "Authoritative world state",
-    body: "The server owns the simulation. Clients send intent; Arcane decides what's real. No client-side trust.",
+    title: "Affinity clustering",
+    body: "Servers own groups of likely-interacting entities, not geographic regions. A learned model groups players by interaction probability — party, guild, proximity, combat history — so dense fights stay inside one cluster's authority with no cross-boundary authority transfers. Spatial proximity is one signal among many, not the partitioning rule.",
   },
   {
-    title: "Horizontal scaling",
-    body: "Spin up more cluster processes as you grow. The manager routes players across instances automatically.",
+    title: "Physics at scale",
+    body: "Authoritative Rapier physics on native Rust nodes. Each cluster simulates its own entities — adding clusters adds physics capacity. Combat-grade hit registration, real projectile ballistics, destructible environments. At player counts a single Unreal or Unity dedicated server can't reach.",
   },
   {
-    title: "Redis-backed replication",
-    body: "State is kept consistent across server processes. Run one host or ten — the protocol is the same.",
+    title: "Heterogeneous node tiers",
+    body: "Pay for physics where it matters. Logic-only nodes for ambient NPCs, Rapier nodes for mid-tier combat, Unreal or Unity dedicated-server nodes for players. All coexist in one deployment — cost scales with simulation complexity, not uniformly across everything.",
   },
   {
     title: "SpacetimeDB persistence",
-    body: "Batched writes to SpacetimeDB keep your database responsive under sustained load. Configurable persist rates.",
+    body: "Batch-persist to SpacetimeDB at 1 Hz regardless of player count. SpacetimeDB handles durable state and discrete game events; Arcane handles high-frequency position distribution. The database stays essentially idle even at 6,000 players.",
   },
   {
     title: "Unreal Engine plugin",
-    body: "Drop arcane-client-unreal into your Plugins/ folder. HTTP join, WebSocket upgrade, replicated entities out of the box.",
+    body: "Drop arcane-client-unreal into your Plugins/ folder. HTTP join, WebSocket upgrade, replicated entities out of the box. Engine-agnostic wire protocol — Unity and Godot clients speak the same protocol.",
   },
   {
     title: "Open source, reproducible",
-    body: "MIT-licensed Rust library. Every benchmark number on this page can be reproduced from a public repo.",
+    body: "MIT-licensed Rust library. Every benchmark number on this page — hardware, parameters, pass criteria — can be reproduced from a public repo. SpacetimeDB-only, 2-cluster, 4-cluster.",
   },
 ];
 ---
