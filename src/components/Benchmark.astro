@@ -1,8 +1,8 @@
 ---
 const rows = [
-  { label: "SpacetimeDB only · 1 node", value: 1750, latency: "51 ms", pct: (1750 / 6000) * 100, signal: false },
-  { label: "Arcane + SpacetimeDB · 2 clusters", value: 3500, latency: "50 ms", pct: (3500 / 6000) * 100, signal: false },
-  { label: "Arcane + SpacetimeDB · 4 clusters", value: 6000, latency: "126 ms", pct: 100, signal: true },
+  { label: "8 clusters · 1,000 CCU", value: 1000, latency: "12.63 ms", pct: (1000 / 2750) * 100, signal: false },
+  { label: "8 clusters · 2,000 CCU", value: 2000, latency: "19.53 ms", pct: (2000 / 2750) * 100, signal: false },
+  { label: "8 clusters · 2,750 CCU", value: 2750, latency: "28.82 ms", pct: 100, signal: true },
 ];
 ---
 
@@ -10,20 +10,20 @@ const rows = [
   <div class="max-w-7xl mx-auto px-6 md:px-10 py-24 md:py-32">
     <div class="flex items-baseline justify-between mb-16 md:mb-24">
       <h2 class="label m-0">§ 02 / BENCHMARK</h2>
-      <div class="label hidden md:block" aria-hidden="true">RUN · 20260329_014433</div>
+      <div class="label hidden md:block" aria-hidden="true">RUN · 20260528_035946</div>
     </div>
 
     <div class="grid md:grid-cols-12 gap-10 md:gap-16 items-start">
       <div class="md:col-span-4">
         <h3 class="text-3xl md:text-4xl font-medium tracking-tight leading-tight">
-          Ceiling at<br />
-          <span class="text-[color:var(--color-mute)]">&lt;1% error,</span><br />
-          <span class="text-[color:var(--color-mute)]">50–126 ms avg.</span>
+          2,750 CCU at<br />
+          <span class="text-[color:var(--color-mute)]">0% errors,</span><br />
+          <span class="text-[color:var(--color-mute)]">28.82 ms mean.</span>
         </h3>
         <p class="label mt-8 leading-relaxed">
-          A single c7i.2xlarge. Ubuntu 22.04.<br />
-          Redis, SpacetimeDB, Arcane and the load generator co-hosted.<br />
-          10 Hz position updates per player. 2 actions / sec. 30s steady state.
+          8 × c6in.4xlarge clusters (50 Gbps NIC).<br />
+          60 Hz tick rate. 1 KB per-entity payload.<br />
+          Full-mesh broadcast, no area-of-interest filtering — worst case for replication bandwidth.
         </p>
       </div>
 
@@ -47,7 +47,7 @@ const rows = [
 
         <div class="flex items-baseline justify-between pt-6 border-t border-[color:var(--color-rule)]">
           <span class="label">PASS CRITERIA</span>
-          <span class="label">err &lt; 1% · avg &lt; 200 ms · latency at 6,000 players: 126 ms</span>
+          <span class="label">err &lt; 5% · mean &lt; 50 ms · ceiling: 2,750 CCU at 28.82 ms</span>
         </div>
       </div>
     </div>
